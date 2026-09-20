@@ -8,7 +8,9 @@ authRouter.post("/login", controller.login);
 authRouter.post("/verify-email", controller.verifyEmail);
 authRouter.post("/resend-otp", controller.resendOtp);
 authRouter.get("/logout", controller.logout);
-authRouter.get("logout-all", controller.logoutAll);
+authRouter.get("/logout-all", controller.logoutAll);
+
+authRouter.get("/rotate-token", controller.rotateToken);
 
 authRouter.post("/forgot-password", controller.forgotPassword);
 authRouter.post("/verify-reset-otp", controller.verifyResetOtp);

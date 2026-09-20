@@ -519,6 +519,15 @@ export async function verifyResetOtp(req, res) {
   try {
     const { email, otp } = req.body;
 
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+        code: "EMAIL_AND_OTP_REQUIRED",
+        data: null,
+      });
+    }
+
     const otpDoc = await otpModel
       .findOne({
         email,
@@ -569,13 +578,19 @@ export async function verifyResetOtp(req, res) {
         expiresIn: "10m",
       },
     );
+
+    res.cookie("resetPasswordToken", resetPasswordToken, {
+      httpOnly: true,
+      secure: false, // true in production with HTTPS
+      sameSite: "strict",
+      maxAge: 10 * 60 * 1000,
+    });
+
     return res.status(200).json({
       success: true,
       message: "OTP verified successfully",
       code: "PASSWORD_RESET_OTP_VERIFIED",
-      data: {
-        resetPasswordToken,
-      },
+      data: null,
     });
   } catch (error) {
     console.error("Verify Reset OTP Error:", error);
@@ -590,7 +605,8 @@ export async function verifyResetOtp(req, res) {
 
 export async function resetPassword(req, res) {
   try {
-    const { resetPasswordToken, newPassword, confirmPassword } = req.body;
+    const { newPassword, confirmPassword } = req.body;
+    const resetPasswordToken = req.cookies.resetPasswordToken;
 
     if (!resetPasswordToken) {
       return res.status(401).json({
@@ -668,6 +684,12 @@ export async function resetPassword(req, res) {
       },
     );
 
+    res.clearCookie("resetPasswordToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
     return res.status(200).json({
       success: true,
       message: "Password reset successfully",
@@ -676,6 +698,138 @@ export async function resetPassword(req, res) {
     });
   } catch (error) {
     console.error("Reset Password Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+      data: null,
+    });
+  }
+}
+
+export async function rotateToken(req, res) {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token not found",
+        code: "REFRESH_TOKEN_NOT_FOUND",
+        data: null,
+      });
+    }
+
+    let decoded;
+
+    try {
+      decoded = jwt.verify(refreshToken, config.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is invalid or expired",
+        code: "REFRESH_TOKEN_INVALID_OR_EXPIRED",
+        data: null,
+      });
+    }
+
+    if (decoded.purpose !== "REFRESH") {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token",
+        code: "INVALID_REFRESH_TOKEN",
+        data: null,
+      });
+    }
+
+    const session = await sessionModel.findOne({
+      _id: decoded.session_id,
+      user_id: decoded.user_id,
+      revoked: false,
+    });
+
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        message: "Session is invalid or revoked",
+        code: "SESSION_INVALID_OR_REVOKED",
+        data: null,
+      });
+    }
+
+    const isRefreshTokenValid = await bcrypt.compare(
+      refreshToken,
+      session.refreshTokenHash,
+    );
+
+    if (!isRefreshTokenValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid refresh token",
+        code: "INVALID_REFRESH_TOKEN",
+        data: null,
+      });
+    }
+
+    const user = await userModel.findById(decoded.user_id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        code: "USER_NOT_FOUND",
+        data: null,
+      });
+    }
+
+    // Create new refresh token
+    const newRefreshToken = jwt.sign(
+      {
+        id: decoded.id,
+        session_id: decoded.session_id,
+        purpose: "REFRESH",
+      },
+      config.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      },
+    );
+
+    const newRefreshTokenHash = await bcrypt.hash(newRefreshToken, 10);
+
+    session.refreshTokenHash = newRefreshTokenHash;
+    await session.save();
+
+    const accessToken = jwt.sign(
+      {
+        user_id: user._id,
+        session_id: session._id,
+        purpose: "ACCESS",
+      },
+      config.JWT_SECRET,
+      {
+        expiresIn: "15m",
+      },
+    );
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Access token refreshed successfully",
+      code: "ACCESS_TOKEN_REFRESHED",
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    console.error("Refresh Token Error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",
