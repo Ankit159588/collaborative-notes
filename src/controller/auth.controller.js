@@ -838,3 +838,36 @@ export async function rotateToken(req, res) {
     });
   }
 }
+
+export async function getMe(req, res) {
+  try {
+    const user = await userModel.findById(req.user.user_id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        code: "USER_NOT_FOUND",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      code: "USER_FETCHED_SUCCESSFULLY",
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.error("Get Me Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+      data: null,
+    });
+  }
+}

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 import * as controller from "../controller/auth.controller.js";
 
 const authRouter = Router();
@@ -15,5 +16,7 @@ authRouter.get("/rotate-token", controller.rotateToken);
 authRouter.post("/forgot-password", controller.forgotPassword);
 authRouter.post("/verify-reset-otp", controller.verifyResetOtp);
 authRouter.post("/reset-password", controller.resetPassword);
+
+authRouter.get("/me", authMiddleware, controller.getMe);
 
 export default authRouter;
