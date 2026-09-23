@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { generateOtp, getOtpHtml } from "../utils/utils.js";
 import bcrypt from "bcryptjs";
-import sendEmail from "../service/emailservice.js";
+import sendEmail from "../service/email.service.js";
 import otpModel from "../models/otp.model.js";
 import config from "../config/config.js";
 import sessionModel from "../models/session.model.js";
@@ -785,7 +785,7 @@ export async function rotateToken(req, res) {
     // Create new refresh token
     const newRefreshToken = jwt.sign(
       {
-        id: decoded.id,
+        user_id: decoded.user_id,
         session_id: decoded.session_id,
         purpose: "REFRESH",
       },

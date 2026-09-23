@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
+import sessionModel from "../models/session.model.js";
 
-export function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -43,6 +44,21 @@ export function authMiddleware(req, res, next) {
         success: false,
         message: "Invalid access token",
         code: "INVALID_ACCESS_TOKEN",
+        data: null,
+      });
+    }
+
+    const session = await sessionModel.findOne({
+      _id: decoded.session_id,
+      user_id: decoded.user_id,
+      revoked: false,
+    });
+
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        message: "Session is invalid or logged out",
+        code: "SESSION_INVALID",
         data: null,
       });
     }

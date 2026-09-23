@@ -9,6 +9,7 @@ const enVar = [
   "REFRESH_TOKEN",
   "EMAIL_USER",
   "JWT_SECRET",
+  "IMAGEKIT_PRIVATE_KEY",
 ];
 
 for (const key of enVar) {
@@ -25,6 +26,7 @@ const config = {
   CLIENT_SECRET: process.env.CLIENT_SECRET,
   REFRESH_TOKEN: process.env.REFRESH_TOKEN,
   EMAIL_USER: process.env.EMAIL_USER,
+  IMAGEKIT_PRIVATE_KEY: process.env.IMAGEKIT_PRIVATE_KEY,
 };
 
 export default config;
