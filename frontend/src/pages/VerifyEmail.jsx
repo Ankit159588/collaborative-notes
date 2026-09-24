@@ -29,7 +29,7 @@ export default function VerifyEmail() {
       console.log("SUCCESS:", result);
       navigate("/login");
     } catch (error) {
-      console.log("Error");
+      console.log(error.response?.data);
     }
   };
 
@@ -39,7 +39,7 @@ export default function VerifyEmail() {
       console.log("SUCCESS:", result);
       navigate("/login");
     } catch (error) {
-      console.log("Error");
+      console.log(error.response?.data);
     }
   };
 
@@ -121,7 +121,7 @@ export default function VerifyEmail() {
           type="button"
           className="btn btn--ghost"
           style={{ marginTop: "var(--space-3)" }}
-          onClick={handleResendOtp}
+          onClick={() => handleResendOtp(email)}
         >
           Resend OTP
         </button>{" "}
