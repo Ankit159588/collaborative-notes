@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import "../styles/forms.css";
 import { useState } from "react";
@@ -10,6 +10,25 @@ export default function Register() {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const result = await registerUser(formData);
+      console.log("SUCCESS:", result);
+      navigate("/verify-email", {
+        state: {
+          email: formData.email,
+        },
+      });
+    } catch (error) {
+      console.log("Error");
+    }
+
+    console.log(formData);
+  };
 
   return (
     <AuthLayout
@@ -17,12 +36,19 @@ export default function Register() {
       title="Create your account"
       subtitle="Join Nimbus in a couple of minutes — no credit card required."
     >
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="field">
           <label className="field__label" htmlFor="username">
             Username
           </label>
           <input
+            value={formData.username}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                username: e.target.value,
+              })
+            }
             name="username"
             id="username"
             className="field__input"
@@ -36,6 +62,13 @@ export default function Register() {
             Email address
           </label>
           <input
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                email: e.target.value,
+              })
+            }
             name="email"
             id="email"
             className="field__input"
@@ -49,6 +82,13 @@ export default function Register() {
             Password
           </label>
           <input
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                password: e.target.value,
+              })
+            }
             name="password"
             id="password"
             className="field__input"
@@ -65,7 +105,7 @@ export default function Register() {
           Policy
         </label>
 
-        <button type="button" className="btn btn--primary">
+        <button type="submit" className="btn btn--primary">
           Create account
         </button>
       </form>
