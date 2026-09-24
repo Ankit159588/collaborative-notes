@@ -1,3 +1,4 @@
+@"
 node_modules/
 .env
 .env.*
@@ -19,3 +20,4 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+"@ | Set-Content .\.gitignore
