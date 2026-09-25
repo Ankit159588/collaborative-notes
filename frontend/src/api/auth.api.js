@@ -36,3 +36,34 @@ export const resendOtp = async (email) => {
 
   return response.data;
 };
+
+export const logOut = async () => {
+  const response = await api.get("/auth/logout");
+  return response.data;
+};
+
+export const forgotPassword = async (email) => {
+  const response = await api.post("/auth/forgot-password", {
+    email,
+  });
+
+  return response.data;
+};
+
+export const verifyResetOtp = async (email, otp) => {
+  const response = await api.post("/auth/verify-reset-otp", {
+    email,
+    otp,
+  });
+
+  return response.data;
+};
+
+export const resetPassword = async (newPassword, confirmPassword) => {
+  const response = await api.post("/auth/reset-password", {
+    newPassword,
+    confirmPassword,
+  });
+
+  return response.data;
+};

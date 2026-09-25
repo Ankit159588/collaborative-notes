@@ -1,7 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
+import { logOut } from "../api/auth.api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
+  const { setAccessToken } = useAuth();
+  const navigate = useNavigate();
+  const handleLogOut = async () => {
+    try {
+      await logOut();
+      setAccessToken(null);
+      navigate("/login");
+    } catch (error) {
+      console.log(error, "Error");
+    }
+  };
   return (
     <div className="dashboard">
       <header className="dashboard__topbar">
@@ -10,9 +23,12 @@ export default function Dashboard() {
         <div className="dashboard__user">
           <span className="dashboard__avatar">JD</span>
           <span className="dashboard__username">Jane Doe</span>
-          <Link className="btn btn--ghost dashboard__logout" to="/login">
+          <button
+            onClick={handleLogOut}
+            className="btn btn--ghost dashboard__logout"
+          >
             Log out
-          </Link>
+          </button>
         </div>
       </header>
 
@@ -43,7 +59,9 @@ export default function Dashboard() {
             <li className="activity-item">
               <span className="activity-item__dot" />
               <div>
-                <p className="activity-item__title">Signed in from a new device</p>
+                <p className="activity-item__title">
+                  Signed in from a new device
+                </p>
                 <span className="activity-item__time">Today, 9:14 AM</span>
               </div>
             </li>

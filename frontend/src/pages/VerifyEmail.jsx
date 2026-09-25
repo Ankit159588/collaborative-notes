@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link, useLocation } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
@@ -10,6 +10,9 @@ export default function VerifyEmail() {
   const navigate = useNavigate();
   const location = useLocation();
   const [otp, setOtp] = useState("");
+  const [resendLoading, setResendLogin] = useState(false);
+  const [resendCoolDown, setResetCoolDown] = useState(0);
+
   const email = location.state?.email;
 
   const handleOtpChange = async (index, value) => {
@@ -35,13 +38,29 @@ export default function VerifyEmail() {
 
   const handleResendOtp = async (email) => {
     try {
+      if (resendLoading || resendCoolDown > 0) return;
+
+      setResendLogin(true);
       const result = await resendOtp(email);
       console.log("SUCCESS:", result);
-      navigate("/login");
+
+      setResetCoolDown(40);
     } catch (error) {
       console.log(error.response?.data);
+    } finally {
+      setResetCoolDown(false);
     }
   };
+
+  useEffect(() => {
+    if (resendCoolDown === 0) return;
+
+    const timer = setInterval(() => {
+      setResetCoolDown((prev) => prev - 1);
+    });
+
+    return () => clearInterval(timer);
+  }, [resendCoolDown]);
 
   return (
     <AuthLayout
@@ -121,9 +140,14 @@ export default function VerifyEmail() {
           type="button"
           className="btn btn--ghost"
           style={{ marginTop: "var(--space-3)" }}
+          disabled={resendLoading || resendCoolDown > 0}
           onClick={() => handleResendOtp(email)}
         >
-          Resend OTP
+          {resendLoading
+            ? "Sending..."
+            : resendCoolDown > 0
+              ? `Resend OTP in ${resendCoolDown}s`
+              : "Resend OTP"}
         </button>{" "}
       </form>
 

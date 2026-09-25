@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import "../styles/forms.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerUser } from "../api/auth.api.js";
 
 export default function Register() {
+  const [resendLoading, setResendLogin] = useState(false);
+  const [resendCoolDown, setResetCoolDown] = useState(0);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -16,6 +18,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
+      if (resendLoading || resendCoolDown > 0) return;
       const result = await registerUser(formData);
       console.log("SUCCESS:", result);
       navigate("/verify-email", {
@@ -24,11 +27,23 @@ export default function Register() {
         },
       });
     } catch (error) {
-      console.log("Error");
+      console.log(error, "Error");
+    } finally {
+      setResetCoolDown(false);
     }
 
     console.log(formData);
   };
+
+  useEffect(() => {
+    if (resendCoolDown === 0) return;
+
+    const timer = setInterval(() => {
+      setResetCoolDown((prev) => prev - 1);
+    });
+
+    return () => clearInterval(timer);
+  }, [resendCoolDown]);
 
   return (
     <AuthLayout
@@ -56,7 +71,6 @@ export default function Register() {
             placeholder="jane_doe"
           />
         </div>
-
         <div className="field">
           <label className="field__label" htmlFor="email">
             Email address
@@ -76,7 +90,6 @@ export default function Register() {
             placeholder="jane@example.com"
           />
         </div>
-
         <div className="field">
           <label className="field__label" htmlFor="password">
             Password
@@ -99,15 +112,21 @@ export default function Register() {
             Use at least 8 characters, with a number and a symbol.
           </span>
         </div>
-
         <label className="checkbox" style={{ marginBottom: "var(--space-5)" }}>
           <input type="checkbox" />I agree to the Terms of Service and Privacy
           Policy
         </label>
-
-        <button type="submit" className="btn btn--primary">
-          Create account
-        </button>
+        <button
+          disabled={resendLoading || resendCoolDown > 0}
+          type="submit"
+          className="btn btn--primary"
+        >
+          {resendLoading
+            ? "Sending..."
+            : resendCoolDown > 0
+              ? `Resend OTP in ${resendCoolDown}s`
+              : "Create Account"}
+        </button>{" "}
       </form>
 
       <p className="form-footer">

@@ -1,20 +1,56 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { loginUser } from "../api/auth.api";
 import AuthLayout from "../components/AuthLayout";
+import { useState } from "react";
 import "../styles/forms.css";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { accessToken, setAccessToken } = useAuth();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const location = useLocation();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const result = await loginUser(formData);
+      setAccessToken(result.accessToken);
+
+      console.log("SUCCESS:", result);
+      navigate("/dashboard");
+    } catch (error) {
+      console.log(error, "Error");
+    }
+  };
+
+  const email = location.state?.email;
   return (
     <AuthLayout
       eyebrow="Welcome back"
       title="Sign in to Nimbus"
       subtitle="Enter your details to access your workspace."
     >
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="field">
           <label className="field__label" htmlFor="email">
             Email address
           </label>
           <input
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                email: e.target.value,
+              })
+            }
             id="email"
             className="field__input"
             type="email"
@@ -27,6 +63,13 @@ export default function Login() {
             Password
           </label>
           <input
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                password: e.target.value,
+              })
+            }
             id="password"
             className="field__input"
             type="password"
@@ -44,13 +87,16 @@ export default function Login() {
           </Link>
         </div>
 
-        <button type="button" className="btn btn--primary">
+        <button type="submit" className="btn btn--primary">
           Sign in
         </button>
       </form>
 
       <p className="form-footer">
-        New to Nimbus? <Link className="link" to="/register">Create an account</Link>
+        New to Nimbus?{" "}
+        <Link on className="link" to="/register">
+          Create an account
+        </Link>
       </p>
     </AuthLayout>
   );
