@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const { setAccessToken } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const handleLogOut = async () => {
     try {
@@ -34,7 +35,7 @@ export default function Dashboard() {
 
       <main className="dashboard__main">
         <section className="dashboard__welcome">
-          <h1>Welcome back, Jane</h1>
+          <h1>Welcome back, {user.username}</h1>
           <p>Here's a quick look at your account today.</p>
         </section>
 

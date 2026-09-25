@@ -19,16 +19,6 @@ export const loginUser = async (userData) => {
   return response.data;
 };
 
-export const getMe = async (accessToken) => {
-  const response = await api.get("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  return response.data;
-};
-
 export const resendOtp = async (email) => {
   const response = await api.post("/auth/resend-otp", {
     email,
@@ -63,6 +53,16 @@ export const resetPassword = async (newPassword, confirmPassword) => {
   const response = await api.post("/auth/reset-password", {
     newPassword,
     confirmPassword,
+  });
+
+  return response.data;
+};
+
+export const getMe = async (accessToken) => {
+  const response = await api.get("/auth/me", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 
   return response.data;
