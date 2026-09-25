@@ -251,21 +251,18 @@ export async function resendOtp(req, res) {
   const otp = generateOtp();
   const otpHash = await bcrypt.hash(otp, 10);
 
-  await otpModel.findOneAndUpdate(
-    { email: user.email, purpose: "EMAIL_VERIFICATION" },
-    {
-      email: user.email,
-      user_id: user._id,
-      otpHash,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      purpose: "EMAIL_VERIFICATION",
-      createdAt: new Date(),
-    },
-    {
-      upsert: true,
-      new: true,
-    },
-  );
+  await otpModel.deleteMany({
+    email: user.email,
+    purpose: "EMAIL_VERIFICATION",
+  });
+
+  await otpModel.create({
+    email: user.email,
+    user_id: user._id,
+    otpHash,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    purpose: "EMAIL_VERIFICATION",
+  });
 
   const html = getOtpHtml(otp);
 
@@ -278,7 +275,6 @@ export async function resendOtp(req, res) {
     data: null,
   });
 }
-
 export async function logout(req, res) {
   try {
     const refreshToken = req.cookies.refreshToken;
