@@ -1,88 +1,77 @@
-import { Link, useNavigate } from "react-router-dom";
-import "./Dashboard.css";
+import { useNavigate } from "react-router-dom";
 import { logOut } from "../api/auth.api";
 import { useAuth } from "../context/AuthContext";
 
+import Sidebar from "../components/layout/Sidebar";
+import Topbar from "../components/layout/Topbar";
+import NoteGrid from "../components/notes/NoteGrid";
+
+import "./Dashboard.css";
+
+const notes = [
+  {
+    id: 1,
+    title: "React Learning",
+    content: "Today I learned about useState, useEffect and Context API.",
+    updated: "Today",
+  },
+  {
+    id: 2,
+    title: "Collaborative Notes",
+    content:
+      "Build the frontend with React and connect it with the Express backend.",
+    updated: "Yesterday",
+  },
+  {
+    id: 3,
+    title: "Backend Ideas",
+    content: "Add Socket.IO and Yjs after completing the basic CRUD interface.",
+    updated: "Sep 27",
+  },
+];
+
 export default function Dashboard() {
-  const { setAccessToken } = useAuth();
-  const { user } = useAuth();
+  const { user, setAccessToken } = useAuth();
   const navigate = useNavigate();
+
   const handleLogOut = async () => {
     try {
       await logOut();
+
       setAccessToken(null);
       navigate("/login");
     } catch (error) {
       console.log(error, "Error");
     }
   };
+
   return (
     <div className="dashboard">
-      <header className="dashboard__topbar">
-        <span className="dashboard__logo">Nimbus</span>
+      <Sidebar onLogout={handleLogOut} />
 
-        <div className="dashboard__user">
-          <span className="dashboard__avatar">JD</span>
-          <span className="dashboard__username">Jane Doe</span>
-          <button
-            onClick={handleLogOut}
-            className="btn btn--ghost dashboard__logout"
-          >
-            Log out
-          </button>
-        </div>
-      </header>
+      <div className="dashboard__content">
+        <Topbar user={user} />
 
-      <main className="dashboard__main">
-        <section className="dashboard__welcome">
-          <h1>Welcome back, {user.username}</h1>
-          <p>Here's a quick look at your account today.</p>
-        </section>
+        <main className="notes-page">
+          <div className="notes-page__header">
+            <div>
+              <h1>My Notes</h1>
 
-        <section className="dashboard__stats">
-          <div className="stat-card">
-            <span className="stat-card__label">Account status</span>
-            <span className="stat-card__value">Verified</span>
+              <p>Create, edit and share your notes.</p>
+            </div>
+
+            <button
+              className="new-note-button"
+              onClick={() => navigate("/notes/new")}
+            >
+              <span>+</span>
+              New Note
+            </button>
           </div>
-          <div className="stat-card">
-            <span className="stat-card__label">Member since</span>
-            <span className="stat-card__value">Sep 2026</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-card__label">Active sessions</span>
-            <span className="stat-card__value">1</span>
-          </div>
-        </section>
 
-        <section className="dashboard__panel">
-          <h2>Recent activity</h2>
-          <ul className="activity-list">
-            <li className="activity-item">
-              <span className="activity-item__dot" />
-              <div>
-                <p className="activity-item__title">
-                  Signed in from a new device
-                </p>
-                <span className="activity-item__time">Today, 9:14 AM</span>
-              </div>
-            </li>
-            <li className="activity-item">
-              <span className="activity-item__dot" />
-              <div>
-                <p className="activity-item__title">Password changed</p>
-                <span className="activity-item__time">Yesterday, 6:02 PM</span>
-              </div>
-            </li>
-            <li className="activity-item">
-              <span className="activity-item__dot" />
-              <div>
-                <p className="activity-item__title">Email verified</p>
-                <span className="activity-item__time">Sep 14, 2026</span>
-              </div>
-            </li>
-          </ul>
-        </section>
-      </main>
+          <NoteGrid notes={notes} />
+        </main>
+      </div>
     </div>
   );
 }

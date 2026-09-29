@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import NotePage from "./pages/NotePage";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -26,6 +27,8 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
+
+        <Route path="/notes/new" element={<NotePage />} />
       </Routes>
     </BrowserRouter>
   );
