@@ -67,3 +67,49 @@ export const getMe = async (accessToken) => {
 
   return response.data;
 };
+
+// NOTE API SECTION
+
+export const createNote = async (accessToken, noteData) => {
+  const response = await api.post("/note/", noteData, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const createImage = async (accessToken, noteId, imageFile) => {
+  const formData = new FormData();
+
+  formData.append("image", imageFile);
+
+  const response = await api.post(`/image/notes/${noteId}`, formData, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const deleteImage = async (accessToken, noteId, fileId) => {
+  const response = await api.delete(`/image/${noteId}/images/${fileId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const getNotes = async (accessToken) => {
+  const response = await api.get("/note/", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
+};

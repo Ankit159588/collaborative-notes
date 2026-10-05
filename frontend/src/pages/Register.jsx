@@ -7,20 +7,29 @@ import { registerUser } from "../api/auth.api.js";
 export default function Register() {
   const [resendLoading, setResendLogin] = useState(false);
   const [resendCoolDown, setResetCoolDown] = useState(0);
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
   });
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (resendLoading || resendCoolDown > 0) return;
+
     try {
-      if (resendLoading || resendCoolDown > 0) return;
+      setResendLogin(true);
+
       const result = await registerUser(formData);
+
       console.log("SUCCESS:", result);
+
+      setResetCoolDown(60);
+
       navigate("/verify-email", {
         state: {
           email: formData.email,
@@ -29,10 +38,8 @@ export default function Register() {
     } catch (error) {
       console.log(error, "Error");
     } finally {
-      setResetCoolDown(false);
+      setResendLogin(false);
     }
-
-    console.log(formData);
   };
 
   useEffect(() => {
@@ -40,7 +47,7 @@ export default function Register() {
 
     const timer = setInterval(() => {
       setResetCoolDown((prev) => prev - 1);
-    });
+    }, 1000);
 
     return () => clearInterval(timer);
   }, [resendCoolDown]);
@@ -56,6 +63,7 @@ export default function Register() {
           <label className="field__label" htmlFor="username">
             Username
           </label>
+
           <input
             value={formData.username}
             onChange={(e) =>
@@ -71,10 +79,12 @@ export default function Register() {
             placeholder="jane_doe"
           />
         </div>
+
         <div className="field">
           <label className="field__label" htmlFor="email">
             Email address
           </label>
+
           <input
             value={formData.email}
             onChange={(e) =>
@@ -90,10 +100,12 @@ export default function Register() {
             placeholder="jane@example.com"
           />
         </div>
+
         <div className="field">
           <label className="field__label" htmlFor="password">
             Password
           </label>
+
           <input
             value={formData.password}
             onChange={(e) =>
@@ -108,25 +120,28 @@ export default function Register() {
             type="password"
             placeholder="Create a password"
           />
+
           <span className="field__hint">
             Use at least 8 characters, with a number and a symbol.
           </span>
         </div>
+
         <label className="checkbox" style={{ marginBottom: "var(--space-5)" }}>
           <input type="checkbox" />I agree to the Terms of Service and Privacy
           Policy
         </label>
+
         <button
           disabled={resendLoading || resendCoolDown > 0}
           type="submit"
           className="btn btn--primary"
         >
           {resendLoading
-            ? "Sending..."
+            ? "Creating Account..."
             : resendCoolDown > 0
-              ? `Resend OTP in ${resendCoolDown}s`
+              ? `Please wait ${resendCoolDown}s`
               : "Create Account"}
-        </button>{" "}
+        </button>
       </form>
 
       <p className="form-footer">
