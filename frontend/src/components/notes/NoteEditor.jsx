@@ -1,11 +1,14 @@
 import "./NoteEditor.css";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { createNote } from "../../api/auth.api";
 import { useAuth } from "../../context/AuthContext";
 import { createImage } from "../../api/auth.api";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { createNote, getNoteById, updateNote } from "../../api/auth.api";
 
 export default function NoteEditor() {
+  const { id } = useParams();
+  const isEditing = Boolean(id);
   const [image, setImage] = useState(null);
   const { accessToken } = useAuth();
   const [formData, setFormData] = useState({
@@ -15,29 +18,51 @@ export default function NoteEditor() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!isEditing || !accessToken) {
+      return;
+    }
+
+    const fetchNote = async () => {
+      try {
+        const result = await getNoteById(accessToken, id);
+
+        const note = result.data.data.note;
+
+        setFormData({
+          title: note.title,
+          content: note.content,
+        });
+      } catch (error) {
+        console.error("Error fetching note:", error);
+      }
+    };
+
+    fetchNote();
+  }, [isEditing, accessToken, id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // 1. Create the note
-      const result = await createNote(accessToken, {
-        title: formData.title,
-        content: formData.content,
-      });
+      if (isEditing) {
+        await updateNote(accessToken, id, {
+          title: formData.title,
+          content: formData.content,
+        });
+      } else {
+        const result = await createNote(accessToken, {
+          title: formData.title,
+          content: formData.content,
+        });
 
-      console.log("NOTE CREATED:", result);
+        const noteId = result.data.note._id;
 
-      // 2. Get the created note ID
-      const noteId = result.data.note._id;
-
-      // 3. Upload image if one was selected
-      if (image) {
-        const imageResult = await createImage(accessToken, noteId, image);
-
-        console.log("IMAGE UPLOADED:", imageResult);
+        if (image) {
+          await createImage(accessToken, noteId, image);
+        }
       }
 
-      // 4. Go back to dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error(error);

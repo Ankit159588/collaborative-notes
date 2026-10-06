@@ -8,6 +8,9 @@ import noteRouter from "./router/note.router.js";
 import noteshareRouter from "./router/noteshare.router.js";
 import authRouter from "./router/auth.router.js";
 import imageRouter from "./router/image.router.js";
+import dns from "dns";
+
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
 

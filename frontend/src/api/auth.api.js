@@ -113,3 +113,27 @@ export const getNotes = async (accessToken) => {
 
   return response.data;
 };
+
+export const getNoteById = async (accessToken, noteId) => {
+  return api.get(`/note/${noteId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
+export const deleteNote = async (accessToken, noteId) => {
+  return api.delete(`/note/${noteId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
+export const updateNote = async (accessToken, noteId, data) => {
+  return api.patch(`/note/${noteId}`, data, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};

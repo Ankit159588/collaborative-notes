@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import NotePage from "./pages/NotePage";
+import NoteEditor from "../src/components/notes/NoteEditor.jsx";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -31,7 +32,9 @@ export default function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/notes/new" element={<NotePage />} />
+          <Route path="/notes/new" element={<NoteEditor />} />
+          <Route path="/notes/:id/edit" element={<NoteEditor />} />
+          <Route path="/notes/:id" element={<NotePage />} />
         </Route>
       </Routes>
     </BrowserRouter>
