@@ -9,6 +9,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import VerifyResetOtp from "./pages/VerifyResetOtp";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import SharedNote from "./pages/SharedNote";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/notes/new" element={<NoteEditor />} />
           <Route path="/notes/:id/edit" element={<NoteEditor />} />
           <Route path="/notes/:id" element={<NotePage />} />
+          <Route path="/share/:token" element={<SharedNote />} />
         </Route>
       </Routes>
     </BrowserRouter>

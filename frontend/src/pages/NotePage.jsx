@@ -1,3 +1,4 @@
+import { createShare } from "../api/share.js";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getNoteById, deleteNote } from "../api/auth.api";
@@ -50,6 +51,16 @@ export default function NotePage() {
     );
   }
 
+  async function handleShare() {
+    try {
+      const result = await createShare(note._id, "viewer");
+
+      console.log("Share created:", result.data);
+    } catch (error) {
+      console.error("Failed to create share:", error);
+    }
+  }
+
   return (
     <div className="note-view">
       <div className="note-view__header">
@@ -81,7 +92,7 @@ export default function NotePage() {
               </button>
 
               {/* SHARE */}
-              <button>Share</button>
+              <button onClick={handleShare}>Share</button>
 
               {/* DELETE */}
               <button

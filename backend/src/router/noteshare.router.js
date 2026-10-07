@@ -8,48 +8,6 @@ noteshareRouter.use(authMiddleware);
 
 /**
  * @swagger
- * /api/share/{noteId}:
- *   post:
- *     summary: Create a share link for a note
- *     tags:
- *       - Note Sharing
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: noteId
- *         required: true
- *         description: ID of the note to share
- *         schema:
- *           type: string
- *         example: 66ab38fa7b60a2a706db4c1a2
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               role:
- *                 type: string
- *                 enum:
- *                   - viewer
- *                   - editor
- *                 example: editor
- *     responses:
- *       201:
- *         description: Share link created successfully
- *       400:
- *         description: Invalid request
- *       404:
- *         description: Note not found
- *       500:
- *         description: Failed to create share link
- */
-noteshareRouter.post("/:noteId", noteshareController.createShare);
-
-/**
- * @swagger
  * /api/share/note/{noteId}:
  *   get:
  *     summary: Get all shares for a note
@@ -100,6 +58,48 @@ noteshareRouter.get("/note/:noteId", noteshareController.getNoteShares);
  *         description: Failed to fetch shared note
  */
 noteshareRouter.get("/:token", noteshareController.getShareNote);
+
+/**
+ * @swagger
+ * /api/share/{noteId}:
+ *   post:
+ *     summary: Create a share link for a note
+ *     tags:
+ *       - Note Sharing
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: noteId
+ *         required: true
+ *         description: ID of the note to share
+ *         schema:
+ *           type: string
+ *         example: 66ab38fa7b60a2a706db4c1a2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum:
+ *                   - viewer
+ *                   - editor
+ *                 example: editor
+ *     responses:
+ *       201:
+ *         description: Share link created successfully
+ *       400:
+ *         description: Invalid request
+ *       404:
+ *         description: Note not found
+ *       500:
+ *         description: Failed to create share link
+ */
+noteshareRouter.post("/:noteId", noteshareController.createShare);
 
 /**
  * @swagger

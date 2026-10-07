@@ -47,7 +47,7 @@ export async function createShare(req, res) {
         share_id: share._id,
         token: share.token,
         role: share.role,
-        share_url: `http://localhost:5173/share/${share.token}`,
+        share_url: `http://localhost:3001/share/${share.token}`,
       },
     });
   } catch (error) {
