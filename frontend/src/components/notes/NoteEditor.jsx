@@ -1,22 +1,29 @@
 import "./NoteEditor.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { createImage } from "../../api/auth.api";
+import {
+  createImage,
+  createNote,
+  deleteImage,
+  getNoteById,
+  updateNote,
+} from "../../api/auth.api";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { createNote, getNoteById, updateNote } from "../../api/auth.api";
 
 export default function NoteEditor() {
   const { id } = useParams();
   const isEditing = Boolean(id);
-  const [image, setImage] = useState(null);
+
   const { accessToken } = useAuth();
+  const navigate = useNavigate();
+
+  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
   });
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isEditing || !accessToken) {
@@ -33,6 +40,8 @@ export default function NoteEditor() {
           title: note.title,
           content: note.content,
         });
+
+        setImages(note.images || []);
       } catch (error) {
         console.error("Error fetching note:", error);
       }
@@ -40,6 +49,26 @@ export default function NoteEditor() {
 
     fetchNote();
   }, [isEditing, accessToken, id]);
+
+  const handleDeleteImage = async (fileId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this image?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteImage(accessToken, id, fileId);
+
+      setImages((prevImages) =>
+        prevImages.filter((image) => image.file_id !== fileId),
+      );
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +79,12 @@ export default function NoteEditor() {
           title: formData.title,
           content: formData.content,
         });
+
+        if (image) {
+          const result = await createImage(accessToken, id, image);
+
+          setImages((prevImages) => [...prevImages, result.data.image]);
+        }
       } else {
         const result = await createNote(accessToken, {
           title: formData.title,
@@ -73,8 +108,13 @@ export default function NoteEditor() {
     <div className="note-editor">
       <div className="note-editor__header">
         <div>
-          <h1>Create Note</h1>
-          <p>Write something you want to remember.</p>
+          <h1>{isEditing ? "Edit Note" : "Create Note"}</h1>
+
+          <p>
+            {isEditing
+              ? "Update your note."
+              : "Write something you want to remember."}
+          </p>
         </div>
 
         <button
@@ -124,7 +164,30 @@ export default function NoteEditor() {
           />
         </div>
 
-        {/* Images */}
+        {/* Existing Images */}
+
+        {isEditing && images.length > 0 && (
+          <div className="note-editor__field">
+            <label>Existing Images</label>
+
+            <div className="note-editor__images">
+              {images.map((img) => (
+                <div key={img.file_id} className="note-editor__image-preview">
+                  <img src={img.url} alt={formData.title || "Note image"} />
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(img.file_id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add Image */}
 
         <div className="note-editor__field">
           <label>Images</label>
@@ -140,6 +203,7 @@ export default function NoteEditor() {
 
             <label htmlFor="image" className="note-editor__image-placeholder">
               <span>+</span>
+
               <p>{image ? image.name : "Add image"}</p>
             </label>
           </div>
@@ -157,7 +221,7 @@ export default function NoteEditor() {
           </button>
 
           <button type="submit" className="button button--primary">
-            Save Note
+            {isEditing ? "Save Changes" : "Save Note"}
           </button>
         </div>
       </form>

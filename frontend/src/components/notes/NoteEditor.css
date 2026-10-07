@@ -77,9 +77,12 @@
   resize: vertical;
 }
 
+/* Images */
+
 .note-editor__images {
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
 .note-editor__image-placeholder {
@@ -113,6 +116,59 @@
   font-size: 13px;
 }
 
+/* Existing Image */
+
+.note-editor__image-preview {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+.note-editor__image-preview img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Delete Image Button */
+
+.note-editor__image-preview button {
+  position: absolute;
+
+  bottom: 6px;
+  right: 6px;
+
+  padding: 5px 9px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #dc2626;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.note-editor__image-preview button:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Action Buttons */
+
 .note-editor__actions {
   display: flex;
   justify-content: flex-end;
@@ -139,4 +195,12 @@
   background: #111827;
   color: white;
   border: 1px solid #111827;
+}
+
+.button--secondary:hover {
+  background: #f9fafb;
+}
+
+.button--primary:hover {
+  background: #1f2937;
 }

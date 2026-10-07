@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getNoteById } from "../api/auth.api";
+import { getNoteById, deleteNote } from "../api/auth.api";
 import { useAuth } from "../context/AuthContext";
-import { deleteNote } from "../api/auth.api";
 import "./NotePage.css";
 
 export default function NotePage() {
@@ -71,8 +70,20 @@ export default function NotePage() {
 
           {menuOpen && (
             <div className="note-view__dropdown">
-              <button>Edit</button>
+              {/* EDIT */}
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  navigate(`/notes/${note._id}/edit`);
+                }}
+              >
+                Edit
+              </button>
+
+              {/* SHARE */}
               <button>Share</button>
+
+              {/* DELETE */}
               <button
                 onClick={async (event) => {
                   event.stopPropagation();
@@ -88,7 +99,6 @@ export default function NotePage() {
                   try {
                     await deleteNote(accessToken, note._id);
 
-                    window.location.reload();
                     navigate("/dashboard");
                   } catch (error) {
                     console.error("Error deleting note:", error);
