@@ -3,11 +3,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { deleteNote } from "../../api/auth.api";
 import { useAuth } from "../../context/AuthContext";
+import SharePanel from "./SharePanel";
+
 export default function NoteCard({ note }) {
   const { accessToken } = useAuth();
   const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <div className="note-card" onClick={() => navigate(`/notes/${note._id}`)}>
@@ -27,6 +30,7 @@ export default function NoteCard({ note }) {
 
           {menuOpen && (
             <div className="note-card__dropdown">
+              {/* EDIT */}
               <button
                 onClick={(event) => {
                   event.stopPropagation();
@@ -36,8 +40,18 @@ export default function NoteCard({ note }) {
                 Edit
               </button>
 
-              <button>Share</button>
+              {/* SHARE */}
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setShareOpen(true);
+                  setMenuOpen(false);
+                }}
+              >
+                Share
+              </button>
 
+              {/* DELETE */}
               <button
                 onClick={async (event) => {
                   event.stopPropagation();
@@ -73,6 +87,11 @@ export default function NoteCard({ note }) {
 
         <span className="note-card__arrow">→</span>
       </div>
+
+      {/* SHARE PANEL */}
+      {shareOpen && (
+        <SharePanel noteId={note._id} onClose={() => setShareOpen(false)} />
+      )}
     </div>
   );
 }

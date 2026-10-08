@@ -1,8 +1,8 @@
-import { createShare } from "../api/share.js";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getNoteById, deleteNote } from "../api/auth.api";
 import { useAuth } from "../context/AuthContext";
+import SharePanel from "../components/notes/SharePanel";
 import "./NotePage.css";
 
 export default function NotePage() {
@@ -13,6 +13,7 @@ export default function NotePage() {
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     const fetchNote = async () => {
@@ -51,16 +52,6 @@ export default function NotePage() {
     );
   }
 
-  async function handleShare() {
-    try {
-      const result = await createShare(note._id, "viewer");
-
-      console.log("Share created:", result.data);
-    } catch (error) {
-      console.error("Failed to create share:", error);
-    }
-  }
-
   return (
     <div className="note-view">
       <div className="note-view__header">
@@ -92,7 +83,15 @@ export default function NotePage() {
               </button>
 
               {/* SHARE */}
-              <button onClick={handleShare}>Share</button>
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setShareOpen(true);
+                  setMenuOpen(false);
+                }}
+              >
+                Share
+              </button>
 
               {/* DELETE */}
               <button
@@ -151,6 +150,11 @@ export default function NotePage() {
           </div>
         )}
       </article>
+
+      {/* SHARE PANEL */}
+      {shareOpen && (
+        <SharePanel noteId={note._id} onClose={() => setShareOpen(false)} />
+      )}
     </div>
   );
 }

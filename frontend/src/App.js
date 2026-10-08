@@ -30,13 +30,15 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
+        {/* Shared Note - Public */}
+        <Route path="/share/:token" element={<SharedNote />} />
+
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/notes/new" element={<NoteEditor />} />
           <Route path="/notes/:id/edit" element={<NoteEditor />} />
           <Route path="/notes/:id" element={<NotePage />} />
-          <Route path="/share/:token" element={<SharedNote />} />
         </Route>
       </Routes>
     </BrowserRouter>
