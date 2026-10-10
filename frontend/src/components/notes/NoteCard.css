@@ -1,51 +1,130 @@
 .note-card__menu-wrapper {
   position: relative;
+  flex-shrink: 0;
 }
+
+.note-card__menu {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #555;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.note-card__menu:hover {
+  background: #f3f4f6;
+  color: #111;
+}
+
+.note-card__menu:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+/* Dropdown */
 
 .note-card__dropdown {
   position: absolute;
 
-  top: 35px;
+  top: calc(100% + 6px);
   right: 0;
 
-  width: 140px;
+  width: 150px;
+
+  padding: 6px;
+
+  box-sizing: border-box;
 
   background: #ffffff;
 
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 10px;
 
-  padding: 6px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.05);
 
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-
-  z-index: 10;
+  z-index: 100;
 }
 
-.note-card__dropdown button {
-  width: 100%;
+/* Dropdown buttons */
 
-  padding: 9px 10px;
+.note-card__dropdown button {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 38px;
+
+  padding: 9px 11px;
 
   border: none;
+  border-radius: 7px;
+
   background: transparent;
-
-  border-radius: 6px;
-
-  text-align: left;
-
-  font-family: inherit;
-  font-size: 14px;
 
   color: #374151;
 
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  text-align: left;
+
   cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .note-card__dropdown button:hover {
   background: #f3f4f6;
+  color: #111111;
 }
+
+.note-card__dropdown button:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: -2px;
+}
+
+/* Delete */
 
 .note-card__dropdown button:last-child {
   color: #dc2626;
+}
+
+.note-card__dropdown button:last-child:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Mobile */
+
+@media (max-width: 500px) {
+  .note-card__dropdown {
+    width: 140px;
+  }
+
+  .note-card__dropdown button {
+    min-height: 40px;
+  }
 }

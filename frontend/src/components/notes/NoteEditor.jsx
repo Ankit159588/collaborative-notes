@@ -25,6 +25,11 @@ export default function NoteEditor() {
     content: "",
   });
 
+  const [loading, setLoading] = useState(isEditing);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  // Fetch existing note when editing
   useEffect(() => {
     if (!isEditing || !accessToken) {
       return;
@@ -32,24 +37,30 @@ export default function NoteEditor() {
 
     const fetchNote = async () => {
       try {
-        const result = await getNoteById(accessToken, id);
+        setLoading(true);
+        setError("");
 
+        const result = await getNoteById(accessToken, id);
         const note = result.data.data.note;
 
         setFormData({
-          title: note.title,
-          content: note.content,
+          title: note.title || "",
+          content: note.content || "",
         });
 
         setImages(note.images || []);
       } catch (error) {
         console.error("Error fetching note:", error);
+        setError("Failed to load note.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchNote();
   }, [isEditing, accessToken, id]);
 
+  // Delete existing image
   const handleDeleteImage = async (fileId) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this image?",
@@ -67,25 +78,39 @@ export default function NoteEditor() {
       );
     } catch (error) {
       console.error("Error deleting image:", error);
+      setError("Failed to delete image.");
     }
   };
 
+  // Save note
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (saving) {
+      return;
+    }
+
     try {
+      setSaving(true);
+      setError("");
+
       if (isEditing) {
+        // Update existing note
         await updateNote(accessToken, id, {
           title: formData.title,
           content: formData.content,
         });
 
+        // Add new image if selected
         if (image) {
           const result = await createImage(accessToken, id, image);
 
           setImages((prevImages) => [...prevImages, result.data.image]);
+
+          setImage(null);
         }
       } else {
+        // Create new note
         const result = await createNote(accessToken, {
           title: formData.title,
           content: formData.content,
@@ -93,6 +118,7 @@ export default function NoteEditor() {
 
         const noteId = result.data.note._id;
 
+        // Add image to newly created note
         if (image) {
           await createImage(accessToken, noteId, image);
         }
@@ -100,9 +126,26 @@ export default function NoteEditor() {
 
       navigate("/dashboard");
     } catch (error) {
-      console.error(error);
+      console.error("Error saving note:", error);
+      setError("Failed to save note. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="note-editor">
+        <div className="note-editor__header">
+          <div>
+            <h1>Loading Note...</h1>
+            <p>Please wait while your note is loading.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="note-editor">
@@ -126,9 +169,10 @@ export default function NoteEditor() {
         </button>
       </div>
 
+      {error && <p className="note-editor__error">{error}</p>}
+
       <form className="note-editor__form" onSubmit={handleSubmit}>
         {/* Title */}
-
         <div className="note-editor__field">
           <label htmlFor="title">Title</label>
 
@@ -147,7 +191,6 @@ export default function NoteEditor() {
         </div>
 
         {/* Content */}
-
         <div className="note-editor__field">
           <label htmlFor="content">Content</label>
 
@@ -165,7 +208,6 @@ export default function NoteEditor() {
         </div>
 
         {/* Existing Images */}
-
         {isEditing && images.length > 0 && (
           <div className="note-editor__field">
             <label>Existing Images</label>
@@ -188,7 +230,6 @@ export default function NoteEditor() {
         )}
 
         {/* Add Image */}
-
         <div className="note-editor__field">
           <label>Images</label>
 
@@ -198,7 +239,9 @@ export default function NoteEditor() {
               id="image"
               accept="image/*"
               hidden
-              onChange={(e) => setImage(e.target.files[0])}
+              onChange={(e) => {
+                setImage(e.target.files[0] || null);
+              }}
             />
 
             <label htmlFor="image" className="note-editor__image-placeholder">
@@ -210,18 +253,22 @@ export default function NoteEditor() {
         </div>
 
         {/* Buttons */}
-
         <div className="note-editor__actions">
           <button
             type="button"
             onClick={() => navigate("/dashboard")}
             className="button button--secondary"
+            disabled={saving}
           >
             Cancel
           </button>
 
-          <button type="submit" className="button button--primary">
-            {isEditing ? "Save Changes" : "Save Note"}
+          <button
+            type="submit"
+            className="button button--primary"
+            disabled={saving}
+          >
+            {saving ? "Saving..." : isEditing ? "Save Changes" : "Save Note"}
           </button>
         </div>
       </form>
