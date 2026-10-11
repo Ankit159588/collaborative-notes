@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getSharedNote } from "../api/share";
+import { getSharedNote, updateSharedNote } from "../api/share";
 import { useAuth } from "../context/AuthContext";
 import "../pages/ShareNote.css";
 
@@ -11,24 +11,33 @@ export default function SharedNote() {
 
   const [note, setNote] = useState(null);
   const [role, setRole] = useState(null);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     async function fetchSharedNote() {
-      // User is not logged in
       if (!accessToken) {
         setLoading(false);
         return;
       }
 
       try {
+        setLoading(true);
+        setNotFound(false);
+
         const result = await getSharedNote(token);
+        const sharedNote = result.data.data.note;
 
-        console.log("Shared note:", result.data);
-
-        setNote(result.data.data.note);
+        setNote(sharedNote);
         setRole(result.data.data.role);
+        setTitle(sharedNote.title || "");
+        setContent(sharedNote.content || "");
       } catch (error) {
         console.error("Failed to fetch shared note:", error);
 
@@ -46,17 +55,49 @@ export default function SharedNote() {
     fetchSharedNote();
   }, [token, accessToken, navigate]);
 
+  async function handleSave() {
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const result = await updateSharedNote(token, accessToken, {
+        title,
+        content,
+      });
+
+      const updatedNote = result.data.data.note;
+
+      setNote(updatedNote);
+      setTitle(updatedNote.title || "");
+      setContent(updatedNote.content || "");
+      setSuccess("Note saved successfully.");
+    } catch (error) {
+      console.error("Failed to update shared note:", error);
+
+      if (error.response?.status === 403) {
+        setError("You do not have permission to edit this note.");
+      } else if (error.response?.status === 410) {
+        setError("This share link has expired.");
+      } else if (error.response?.status === 401) {
+        setError("Your session has expired. Please log in again.");
+      } else {
+        setError(error.response?.data?.message || "Failed to save the note.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) {
     return <div className="shared-note__loading">Loading shared note...</div>;
   }
 
-  // Not logged in
   if (!accessToken) {
     return (
       <div className="shared-note__not-found">
         <h2>Login required</h2>
-
-        <p>You need to login to view this shared note.</p>
+        <p>You need to log in to view this shared note.</p>
 
         <button
           className="shared-note__login-button"
@@ -68,12 +109,10 @@ export default function SharedNote() {
     );
   }
 
-  // Note doesn't exist / invalid share link
   if (notFound || !note) {
     return (
       <div className="shared-note__not-found">
         <h2>Note not found</h2>
-
         <p>This share link may be invalid or expired.</p>
 
         <button
@@ -85,6 +124,8 @@ export default function SharedNote() {
       </div>
     );
   }
+
+  const canEdit = role === "editor";
 
   return (
     <div className="shared-note">
@@ -100,7 +141,21 @@ export default function SharedNote() {
 
       <article className="shared-note__card">
         <div className="shared-note__title-section">
-          <h1>{note.title || "Untitled Note"}</h1>
+          {canEdit ? (
+            <input
+              type="text"
+              value={title}
+              maxLength={200}
+              placeholder="Untitled Note"
+              onChange={(event) => {
+                setTitle(event.target.value);
+                setSuccess("");
+              }}
+              aria-label="Note title"
+            />
+          ) : (
+            <h1>{note.title || "Untitled Note"}</h1>
+          )}
 
           {note.updatedAt && (
             <p>
@@ -115,7 +170,20 @@ export default function SharedNote() {
         </div>
 
         <div className="shared-note__content">
-          {note.content || "No content"}
+          {canEdit ? (
+            <textarea
+              value={content}
+              placeholder="Write your note..."
+              onChange={(event) => {
+                setContent(event.target.value);
+                setSuccess("");
+              }}
+              aria-label="Note content"
+              rows={12}
+            />
+          ) : (
+            <div>{note.content || "No content"}</div>
+          )}
         </div>
 
         {note.images?.length > 0 && (
@@ -129,6 +197,17 @@ export default function SharedNote() {
             ))}
           </div>
         )}
+
+        {canEdit && (
+          <div className="shared-note__actions">
+            <button type="button" onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        )}
+
+        {error && <p role="alert">{error}</p>}
+        {success && <p role="status">{success}</p>}
       </article>
     </div>
   );

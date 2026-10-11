@@ -80,11 +80,6 @@ export default function Login() {
         </div>
 
         <div className="field__row">
-          <label className="checkbox">
-            <input type="checkbox" />
-            Remember me
-          </label>
-
           <Link className="link" to="/forgot-password">
             Forgot password?
           </Link>

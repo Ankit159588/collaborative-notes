@@ -172,4 +172,6 @@ noteshareRouter.patch("/:shareId", noteshareController.updateShareRole);
  */
 noteshareRouter.delete("/:shareId", noteshareController.revokeShare);
 
+noteshareRouter.patch("/token/:token", noteshareController.updateSharedNote);
+
 export default noteshareRouter;

@@ -23,3 +23,11 @@ export async function updateShareRole(shareId, role) {
 export async function revokeShare(shareId) {
   return api.delete(`/share/${shareId}`);
 }
+
+export const updateSharedNote = async (token, accessToken, data) => {
+  return api.patch(`/share/token/${token}`, data, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};

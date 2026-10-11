@@ -262,3 +262,109 @@ export async function getNoteShares(req, res) {
     });
   }
 }
+
+export async function updateSharedNote(req, res) {
+  try {
+    const { token } = req.params;
+    const { title, content } = req.body;
+
+    // Find the share link
+    const share = await noteShareModel.findOne({ token });
+
+    if (!share) {
+      return res.status(404).json({
+        success: false,
+        message: "Share link not found",
+        code: "SHARE_NOT_FOUND",
+        data: null,
+      });
+    }
+
+    // Check expiration
+    if (share.expires_at && share.expires_at < new Date()) {
+      return res.status(410).json({
+        success: false,
+        message: "Share link has expired",
+        code: "SHARE_LINK_EXPIRED",
+        data: null,
+      });
+    }
+
+    // Only editors can edit
+    if (share.role !== "editor") {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to edit this note",
+        code: "SHARE_EDIT_FORBIDDEN",
+        data: null,
+      });
+    }
+
+    // Validate input
+    if (title === undefined && content === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Provide a title or content to update",
+        code: "NO_UPDATE_FIELDS",
+        data: null,
+      });
+    }
+
+    if (
+      (title !== undefined && typeof title !== "string") ||
+      (content !== undefined && typeof content !== "string")
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and content must be strings",
+        code: "INVALID_NOTE_FIELDS",
+        data: null,
+      });
+    }
+
+    if (title !== undefined && title.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: "Title cannot exceed 200 characters",
+        code: "TITLE_TOO_LONG",
+        data: null,
+      });
+    }
+
+    // Update the original note
+    const note = await noteModel.findById(share.note_id);
+
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        code: "NOTE_NOT_FOUND",
+        data: null,
+      });
+    }
+
+    if (title !== undefined) note.title = title;
+    if (content !== undefined) note.content = content;
+
+    await note.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Shared note updated successfully",
+      code: "SHARED_NOTE_UPDATED",
+      data: {
+        note,
+        role: share.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update shared note",
+      code: "SHARED_NOTE_UPDATE_FAILED",
+      data: null,
+    });
+  }
+}
