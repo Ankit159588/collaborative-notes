@@ -31,3 +31,11 @@ export const updateSharedNote = async (token, accessToken, data) => {
     },
   });
 };
+
+export const deleteSharedImage = async (token, accessToken, fileId) => {
+  return api.delete(`/share/token/${token}/images/${fileId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};

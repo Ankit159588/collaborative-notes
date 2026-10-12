@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import noteModel from "../models/note.model.js";
 import noteShareModel from "../models/noteshare.model.js";
+import { deleteFromImagekit } from "../service/imagekit.service.js";
 
 export async function createShare(req, res) {
   try {
@@ -365,6 +366,86 @@ export async function updateSharedNote(req, res) {
       message: "Failed to update shared note",
       code: "SHARED_NOTE_UPDATE_FAILED",
       data: null,
+    });
+  }
+}
+
+export async function deleteSharedImage(req, res) {
+  try {
+    const { token, file_id } = req.params;
+
+    if (!file_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Image file ID is required",
+        code: "IMAGE_FILE_ID_REQUIRED",
+      });
+    }
+
+    const share = await noteShareModel.findOne({ token });
+
+    if (!share) {
+      return res.status(404).json({
+        success: false,
+        message: "Share link not found",
+        code: "SHARE_NOT_FOUND",
+      });
+    }
+
+    if (share.expires_at && share.expires_at < new Date()) {
+      return res.status(410).json({
+        success: false,
+        message: "Share link has expired",
+        code: "SHARE_EXPIRED",
+      });
+    }
+
+    if (share.role !== "editor") {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to delete images",
+        code: "INSUFFICIENT_PERMISSION",
+      });
+    }
+
+    const note = await noteModel.findById(share.note_id);
+
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        code: "NOTE_NOT_FOUND",
+      });
+    }
+
+    const imageExists = note.images.some((image) => image.file_id === file_id);
+
+    if (!imageExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Image not found in this note",
+        code: "IMAGE_NOT_FOUND",
+      });
+    }
+
+    await deleteFromImagekit(file_id);
+
+    note.images = note.images.filter((image) => image.file_id !== file_id);
+
+    await note.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Shared note image deleted successfully",
+      code: "SHARED_IMAGE_DELETED",
+    });
+  } catch (error) {
+    console.error("DELETE SHARED IMAGE ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete shared note image",
+      code: "SHARED_IMAGE_DELETE_FAILED",
     });
   }
 }

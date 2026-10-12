@@ -174,4 +174,9 @@ noteshareRouter.delete("/:shareId", noteshareController.revokeShare);
 
 noteshareRouter.patch("/token/:token", noteshareController.updateSharedNote);
 
+noteshareRouter.delete(
+  "/token/:token/images/:file_id",
+  noteshareController.deleteSharedImage,
+);
+
 export default noteshareRouter;
